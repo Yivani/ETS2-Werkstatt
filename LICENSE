@@ -1,0 +1,40 @@
+ETS2 Werkstatt — End User License
+Copyright (c) 2026 Yivani. All rights reserved.
+
+1. What you may do
+   You may download the official ETS2 Werkstatt release archives from
+   https://github.com/Yivani/ETS2-Werkstatt/releases and use the program, free of
+   charge, to edit your own Euro Truck Simulator 2 save games, for personal and
+   non-commercial purposes.
+   You may pass on an unmodified official release archive to others, free of
+   charge, together with this license.
+
+2. What you may not do
+   - Use, copy, adapt or publish the program's source code or any part of it in
+     other software.
+   - Modify the program or distribute modified versions.
+   - Decompile, disassemble or reverse engineer the program, except where the law
+     that applies to you expressly allows it despite this restriction.
+   - Sell, rent or bundle the program, or charge for access to it.
+   - Remove or change copyright notices, this license or the third-party notices.
+
+3. Third-party components
+   The program contains components by other authors (the .NET runtime by
+   Microsoft and code ported from other open-source projects). They remain under
+   their own licenses, listed in THIRD-PARTY-NOTICES.md and in the "Lizenzen"
+   folder of every release archive. Nothing in this license limits the rights
+   those licenses grant you for their components.
+
+4. No warranty
+   The program is provided "as is", without warranty of any kind. Editing save
+   games can make them unusable. The program backs up the original before saving,
+   but you use it at your own risk. In no event shall the author be liable for
+   any claim, damages or other liability arising from the use of the program.
+
+5. Trademarks
+   Euro Truck Simulator 2 and SCS Software are trademarks of SCS Software s.r.o.
+   TruckersMP is a trademark of its owners. ETS2 Werkstatt is an independent fan
+   tool and is not affiliated with or endorsed by SCS Software or TruckersMP.
+
+Permissions beyond this license can be requested from the author through
+https://github.com/Yivani/ETS2-Werkstatt/issues.

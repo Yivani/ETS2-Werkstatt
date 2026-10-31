@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="256" height="256" role="img" aria-label="ETS2 Werkstatt">
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#F2A04B"/>
+  <g fill="#1A1208">
+    <rect x="12" y="9" width="40" height="22" rx="5"/>
+    <rect x="10" y="27" width="44" height="23" rx="3.5"/>
+    <rect x="13" y="48" width="8" height="7" rx="2"/>
+    <rect x="43" y="48" width="8" height="7" rx="2"/>
+  </g>
+  <g fill="#F2A04B">
+    <polygon points="17.5,13 46.5,13 48.5,25 15.5,25"/>
+    <rect x="12.5" y="41" width="5" height="4" rx="1.2"/>
+    <rect x="46.5" y="41" width="5" height="4" rx="1.2"/>
+  </g>
+  <polyline points="19.5,31.5 25.5,44 32,35.5 38.5,44 44.5,31.5" fill="none" stroke="#F2A04B" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
