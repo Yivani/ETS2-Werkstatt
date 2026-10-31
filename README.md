@@ -11,7 +11,7 @@
 ## What it does
 
 **Driver**
-- Money, with short forms (`250k`, `3 M`) and a one-click maximum
+- Money, with short forms (`250k`, `3 M`), a minus for debt (`-50k`) and a one-click maximum
 - Experience and level, converted into each other as you type
 - In-game time as days and clock time
 - The five skills and all six ADR classes
