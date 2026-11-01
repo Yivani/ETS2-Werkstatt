@@ -149,7 +149,7 @@ public static class VehiclePreview
 
     sealed record Definition(string Kind,string Folder,string? Model,string? Variant,string? Look,string? ExtModel,string? ExtLook);
     sealed record Placed(Model Model,HashSet<int> Visible,Matrix3D Transform,string Look);
-    sealed record MaterialInfo(string Effect,Color Diffuse,string? Texture);
+    sealed record MaterialInfo(string Effect,Color Diffuse,string? Texture,string? Mult);
 
     /// <summary>Builds and freezes the model. Parts the game files don't contain (mods) are listed in <see cref="PreviewModel.Missing"/>.</summary>
     public static PreviewModel Build(GameFiles files,VehicleSpec spec)
@@ -272,7 +272,8 @@ public static class VehiclePreview
                 if(!texture.Success)texture=Regex.Match(text,@"texture\s*:\s*""([^""]+\.tobj)""");
                 string? source=texture.Success?texture.Groups[1].Value:null;
                 if(source!=null&&!source.StartsWith('/'))source=Path.GetDirectoryName(path)!.Replace('\\','/')+"/"+source;
-                info=new(effect,diffuse,source);
+                var mult=Regex.Match(text,@"""texture_mult""\s*\{[^}]*?source\s*:\s*""([^""]+)""");
+                info=new(effect,diffuse,source,mult.Success&&effect.Contains(".mult.")?mult.Groups[1].Value:null);
             }
             return materials[path]=info;
         }
@@ -310,8 +311,10 @@ public static class VehiclePreview
                 {
                     if(piece.Vertices.Count==0||piece.Triangles.Count==0||piece.Material>=look.Materials.Count)continue;
                     var info=Material(look.Materials[(int)piece.Material]);if(info==null)continue;
+                    // "mult" materials take their colour from a palette texture on the second UV set.
+                    int set=info.Mult!=null&&piece.TextureCoordinateWidth>1?1:0;if(set==0&&info.Mult!=null)info=info with{Mult=null};
                     var material=Surface(info,body,paint,out bool see);if(material==null)continue;
-                    var geometry=new GeometryModel3D(Mesh(piece),material){Transform=transform};geometry.Freeze();
+                    var geometry=new GeometryModel3D(Mesh(piece,set),material){Transform=transform};geometry.Freeze();
                     (see?transparent:opaque).Add(geometry);
                 }
         }
@@ -320,6 +323,7 @@ public static class VehiclePreview
         {
             see=false;string effect=info.Effect;
             if(effect.Length==0||Hidden.Any(effect.Contains))return null;
+            var flat=Lift(body,12);body=Lift(body,30);if(paint is {} own)paint=Lift(own,30);
             Material Finish(Brush brush,double shine)
             {
                 brush.Freeze();var diffuse=new DiffuseMaterial(brush);
@@ -327,29 +331,32 @@ public static class VehiclePreview
                 result.Freeze();return result;
             }
             if(effect.Contains("glass")){see=true;return Finish(new SolidColorBrush(Color.FromArgb(150,18,22,26)),.5);}
-            if(effect.Contains("truckpaint"))return Finish(new SolidColorBrush(body),.35);
+            if(effect.Contains("truckpaint"))return Finish(new SolidColorBrush(flat),.45);
             bool alpha=effect.Contains(".a.")||effect.EndsWith(".a",StringComparison.Ordinal)||effect.Contains("decal")||effect.Contains(".over");
             Color? tint=effect.Contains(".paint")&&!alpha?paint??body:null;
-            if(info.Texture!=null&&Texture(info.Texture,alpha,tint,paint!=null) is {} bitmap)
+            if((info.Mult??info.Texture) is {} source&&Texture(source,alpha,info.Mult!=null?null:tint,paint!=null) is {} bitmap)
             {
                 see=alpha;
                 var brush=new ImageBrush(bitmap){ViewportUnits=BrushMappingMode.Absolute,Viewport=new Rect(0,0,1,1),TileMode=TileMode.Tile};
                 brush.Freeze();var diffuse=new DiffuseMaterial(brush){Color=info.Diffuse};
-                Material result=effect.Contains("env")||effect.Contains("chrome")?new MaterialGroup{Children={diffuse,new SpecularMaterial(new SolidColorBrush(Color.FromRgb(90,90,90)),30)}}:diffuse;
+                byte shine=(byte)(tint!=null?110:effect.Contains("env")||effect.Contains("chrome")?90:0);
+                Material result=shine>0?new MaterialGroup{Children={diffuse,new SpecularMaterial(new SolidColorBrush(Color.FromRgb(shine,shine,shine)),tint!=null?45:30)}}:diffuse;
                 result.Freeze();return result;
             }
             if(alpha)return null;
             var plain=info.Diffuse;
             return Finish(new SolidColorBrush(Color.FromRgb((byte)(plain.R*.55),(byte)(plain.G*.55),(byte)(plain.B*.55))),.1);
         }
-        static MeshGeometry3D Mesh(Piece piece)
+        /// <summary>Paint as shown: black stays dark grey so the shape of a black body still reads under the lights.</summary>
+        static Color Lift(Color c,int floor)=>Color.FromRgb((byte)(floor+c.R*(255-floor)/255),(byte)(floor+c.G*(255-floor)/255),(byte)(floor+c.B*(255-floor)/255));
+        static MeshGeometry3D Mesh(Piece piece,int set)
         {
             var mesh=new MeshGeometry3D();
             var positions=new Point3DCollection(piece.Vertices.Count);var normals=new Vector3DCollection(piece.Vertices.Count);var uv=new PointCollection(piece.Vertices.Count);
             foreach(var v in piece.Vertices)
             {
                 positions.Add(new(v.Position.X,v.Position.Y,v.Position.Z));normals.Add(new(v.Normal.X,v.Normal.Y,v.Normal.Z));
-                uv.Add(v.TextureCoordinates is {Count:>0} t?new Point(t[0].X,t[0].Y):new Point());
+                uv.Add(v.TextureCoordinates is {} t&&t.Count>set?new Point(t[set].X,t[set].Y):new Point());
             }
             double facing=0;
             foreach(var t in piece.Triangles.Take(64))
@@ -413,7 +420,11 @@ public sealed class VehicleStage : Grid
         MouseWheel+=(s,e)=>{zoom=Math.Clamp(zoom*(e.Delta>0?1/1.12:1.12),.45,2.2);Place();e.Handled=true;};
         KeyDown+=(s,e)=>{if(e.Key is Key.Left or Key.Right){yaw+=e.Key==Key.Left?10:-10;Place();e.Handled=true;}else if(e.Key==Key.Home){Reset();e.Handled=true;}};
     }
-    public void Show(PreviewModel? model){holder.Content=model?.Model;bounds=model?.Bounds??Rect3D.Empty;Place();}
+    public void Show(PreviewModel? model)
+    {
+        if(!ReferenceEquals(holder.Content,model?.Model)){yaw=-140;pitch=12;zoom=1;}
+        holder.Content=model?.Model;bounds=model?.Bounds??Rect3D.Empty;Place();
+    }
     public void Reset(){yaw=-140;pitch=12;zoom=1;Place();}
     internal void Turn(double angle){yaw=angle;Place();}
     void Place()

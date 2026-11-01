@@ -32,7 +32,8 @@ public sealed partial class MainWindow
             var files=await gameFiles;
             var built=capture?VehiclePreview.Build(files,spec):await Task.Run(()=>{lock(files)return VehiclePreview.Build(files,spec);});
             if(previews.Count>=4)previews.Remove(previews.Keys.First());previews[spec.Key]=built;
-            if(ticket==previewTicket)Show(built.Model.Children.Count>1?built:null,built.Model.Children.Count>1?null:L.T("preview.failed"));
+            bool shown=built.Model.Children.Count>1;
+            if(ticket==previewTicket)Show(shown?built:null,shown?null:built.Missing.Count>0&&built.Missing.Count>=spec.Parts.Count/2?L.T("preview.mod"):L.T("preview.failed"));
         }
         catch(Exception e) when(e is not OutOfMemoryException){if(ticket==previewTicket)Show(null,L.T("preview.failed"));}
     }
