@@ -22,15 +22,18 @@ in the freight market), unlock all truck dealers and recruitment agencies, repai
 trucks, max skills for hired drivers, discover bus stations, clean record.
 
 **Garages**
-- Every garage in your save, searchable and filterable by country
+- Every garage in your save, as a list or on the road map of your installed game and DLCs
+- Search and filter by country; owned garages are marked on the map
 - Buy, upgrade or sell one garage, or all garages of a country at once
 - Set your headquarters, move a truck and its driver to another garage
 
 **Trucks**
-- Your own trucks and trailers with condition, fuel and odometer
+- A 3D view of each of your trucks and trailers, built from your game files with the parts and
+  paint from your save; drag to turn, scroll to zoom
+- Condition, fuel and odometer
 - Repair and refuel one or all, change the odometer and your truck's licence plate
 
-![Garages tab](assets/garages.png)
+![Garages tab with the road map](assets/garages.png)
 
 ## Before you start
 
@@ -60,7 +63,7 @@ Not yet confirmed in game: newly unlocked dealers and agencies in cities without
 bus stations, a lowered odometer, and a cleared offence history. Try these on a copy of a save
 first (save switcher → *Save a copy…*).
 
-![Trucks tab](assets/trucks.png)
+![Trucks tab with the 3D view of the truck in the save](assets/trucks.png)
 
 ## TruckersMP
 
@@ -74,23 +77,35 @@ Werkstatt tells you when a save is affected.
 - Windows 10 or 11, 64-bit
 - Euro Truck Simulator 2 (tested with 1.61), profile stored locally (see above)
 - No installation and no .NET setup: the program is a single file that includes everything it
-  needs (59 MB download, 134 MB unpacked).
+  needs.
+- The map and the 3D view read the game folder (found automatically through Steam).
 - Works offline. No account, no telemetry, no uploads.
 - English, Deutsch, Polski, Русский, 简体中文
 
+## Building from source
+
+The code is in [`src`](src): C# and WPF on .NET 10, with the interface built in code. Map,
+archive and model reading use [TruckLib](https://github.com/sk-zk/TruckLib).
+
+```
+dotnet publish src/Werkstatt.csproj -c Release -o publish
+```
+
+`ETS2-Werkstatt.exe --self-test --sample <text game.sii> --binary-sample <binary game.sii> --render <folder>`
+runs the built-in checks against copies of two saves and renders every screen in all languages.
+
 ## Licence
 
-The program is free to download and use for your own saves. The source code is not public and
-may not be reused; see [LICENSE](LICENSE). Bundled third-party components keep their own
-licences: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+GNU General Public License v2, see [LICENSE](LICENSE). Bundled components and their licences:
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 Euro Truck Simulator 2 is a trademark of SCS Software. This is an independent fan tool and is not
 affiliated with SCS Software or TruckersMP.
 
 ## Kurz auf Deutsch
 
-Spielstand-Editor für Euro Truck Simulator 2 – Geld, Level, Fähigkeiten, Garagen, Städte,
-Händler, Lkw. Jede Änderung siehst du vor dem Speichern, das Original wird automatisch gesichert.
+Spielstand-Editor für Euro Truck Simulator 2 – Geld, Level, Fähigkeiten, Garagen mit Karte,
+Städte, Händler, Lkw mit 3D-Ansicht. Jede Änderung siehst du vor dem Speichern, das Original wird automatisch gesichert.
 **Wichtig:** Steam Cloud im Spiel für das Profil ausschalten (Profile → Bearbeiten → Haken bei
 „Steam Cloud verwenden“ entfernen) und ETS2 zum Speichern beenden.
 [Download](https://github.com/Yivani/ETS2-Werkstatt/releases/latest)
